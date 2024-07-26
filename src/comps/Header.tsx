@@ -1,123 +1,72 @@
-import axios from 'axios';
-import React, { FormEvent, useEffect, useRef, useState } from 'react';
-import { WeatherDataType } from './DataTypeInterface';
+import axios from 'axios'
+import React, { FormEvent, useEffect, useRef, useState } from 'react'
+import { WeatherDataType } from './DataTypeInterface'
 
-import { useData } from './DataContext';
-import { useDataAlert } from './AlertContext';
-import WeatherIcon from './WeatherIcon';
-import { useNavigate } from 'react-router-dom';
-import gsap from 'gsap';
+import { useData } from './DataContext'
+import { useDataAlert } from './AlertContext'
+import gsap from 'gsap'
+import { useNavigate } from 'react-router-dom'
 import { IoIosHome } from "react-icons/io";
 import { MdOutlineGpsFixed } from "react-icons/md";
 import { IoIosContact } from "react-icons/io";
 
-const fetchWeatherData = async (cityOrLat: string | number, keys: string[], lon?: number, index = 0): Promise<any> => {
-    if (index >= keys.length) {
-        throw new Error('All API keys have been exhausted');
-    }
-
-    const params = typeof cityOrLat === 'string'
-        ? { city: cityOrLat, key: keys[index], include: 'minutely' }
-        : { lat: cityOrLat, lon: lon!, key: keys[index], include: 'minutely' };
-
-    try {
-        const response = await axios.get('https://api.weatherbit.io/v2.0/current', { params });
-
-        if (response.status === 200) {
-            return response.data;
-        } else {
-            throw new Error(`Error: Received status code ${response.status}`);
-        }
-    } catch (error) {
-        console.log(`API key at index ${index} failed. Trying the next key...`);
-        return fetchWeatherData(cityOrLat, keys, lon, index + 1);
-    }
-};
-
-const fetchWeatherAlerts = async (cityOrLat: string | number, keys: string[], lon?: number, index = 0): Promise<any> => {
-    if (index >= keys.length) {
-        throw new Error('All API keys have been exhausted');
-    }
-
-    const params = typeof cityOrLat === 'string'
-        ? { city: cityOrLat, key: keys[index] }
-        : { lat: cityOrLat, lon: lon!, key: keys[index] };
-
-    try {
-        const response = await axios.get('https://api.weatherbit.io/v2.0/alerts', { params });
-
-        if (response.status === 200) {
-            return response.data;
-        } else {
-            throw new Error(`Error: Received status code ${response.status}`);
-        }
-    } catch (error) {
-        console.log(`API key at index ${index} failed. Trying the next key...`);
-        return fetchWeatherAlerts(cityOrLat, keys, lon, index + 1);
-    }
-};
+import WeatherIcon from './WeatherIcon'
 
 const Header: React.FC = () => {
-    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
-    const [error, setError] = useState<string | null>(null);
     const { setWeatherData, data } = useData();
     const { setWeatherDataAlert } = useDataAlert();
     const [searchVal, setSearchVal] = useState<string>('');
-    const keys = [
-        process.env.REACT_APP_API_KEY,
-        process.env.REACT_APP_SEC_KEY,
-        process.env.REACT_APP_THIRD_KEY,
-    ].filter(key => key !== undefined) as string[];
+
+
 
     useEffect(() => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    console.log("Geolocation success:", position);
-                    setLocation({
-                        lat: position.coords.latitude,
-                        lon: position.coords.longitude,
-                    });
-                },
-                (err) => {
-                    console.error("Geolocation error:", err);
-                    setError('Failed to retrieve location. Please enable location services and refresh the page.');
-                }
-            );
-        } else {
-            console.error('Geolocation is not supported by this browser.');
-            setError('Geolocation is not supported by this browser.');
-        }
-    }, []);
-    
 
-    useEffect(() => {
-        if (location && !data) {
-            fetchWeatherData(location.lat, keys, location.lon)
-                .then(setWeatherData)
-                .catch(console.error);
-
-            fetchWeatherAlerts(location.lat, keys, location.lon)
-                .then(setWeatherDataAlert)
-                .catch(console.error);
-        }
-    }, [location, data, setWeatherData, setWeatherDataAlert, keys]);
-
-    const nav = useNavigate()
+            axios.get(`https://api.weatherbit.io/v2.0/current?lat=35.7796&lon=-78.6382&key=${process.env.REACT_APP_SEC_KEY || process.env.REACT_APP_THIRD_KEY}&include=minutely`)
+                .then((res) => {
+                    if (res.status === 200) {
+                        setWeatherData(res.data);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+            axios.get(`https://api.weatherbit.io/v2.0/alerts?&key=${process.env.REACT_APP_SEC_KEY || process.env.REACT_APP_THIRD_KEY}`)
+                .then((res) => {
+                    if (res.status === 200) {
+                        setWeatherDataAlert(res.data);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        
+    }, [data, setWeatherData, setWeatherDataAlert]);
 
     function searchValue(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (searchVal !== '') {
-            nav('/')
-            fetchWeatherData(searchVal, keys)
-                .then(setWeatherData)
-                .catch(console.error);
-
-            fetchWeatherAlerts(searchVal, keys)
-                .then(setWeatherDataAlert)
-                .catch(console.error);
+            axios.get(`https://api.weatherbit.io/v2.0/current?city=${searchVal}&key=${ process.env.REACT_APP_SEC_KEY}&include=minutely`)
+                .then((res) => {
+                    if (res.status === 200) {
+                        setWeatherData(res.data);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+            axios.get(`https://api.weatherbit.io/v2.0/alerts?city=${searchVal}&key=${ process.env.REACT_APP_SEC_KEY}}`)
+                .then((res) => {
+                    if (res.status === 200) {
+                        setWeatherDataAlert(res.data);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
         }
     }
+
+    const nav = useNavigate()
 
 
     const [isMenuOpen, setMenuOpen] = useState<boolean>(false)
@@ -136,10 +85,8 @@ const Header: React.FC = () => {
         }
     }
 
-
-
     return (
-        <React.Fragment>
+      <React.Fragment>
             {
                 isMenuOpen &&
                 <div
@@ -208,8 +155,7 @@ const Header: React.FC = () => {
                 }
             </header>
         </React.Fragment>
-    );
-};
+    )
+}
 
-export default Header;
-
+export default Header

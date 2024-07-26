@@ -1,34 +1,10 @@
 import React, { useEffect, useState } from 'react'
 
 const LiveTracker: React.FC = () => {
-    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setLocation({
-              lat: position.coords.latitude,
-              lon: position.coords.longitude,
-            });
-          },
-          (err) => {
-            setError('Failed to retrieve location. Please enable location services and refresh the page.');
-          }
-        );
-      } else {
-        setError('Geolocation is not supported by this browser.');
-      }
-    }, []);
-    if (error) {
-      return <div>{error}</div>;
-    }
-    if (!location) {
-      return <div>Loading...</div>;
-    }
-  
-    const src = `https://www.rainviewer.com/map.html?loc=${location.lat},${location.lon},5&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=0&c=3&o=83&lm=1&layer=radar&mlayer=0&sm=1&sn=1&hu=false`;
+
+
+    const src = `https://www.rainviewer.com/map.html`;
 
 
     return (

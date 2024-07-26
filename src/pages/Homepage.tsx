@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import sampleImage from '../images/4102314_cloud_cloudy_sun_sunny_weather_icon.png'
 
-
-
 import cloudySunSunnyWeather from '../images/4102314_cloud_cloudy_sun_sunny_weather_icon.png'
 import cloudSunWeather from '../images/4102315_cloud_weather_icon.png'
 import cloudDrizzleRainWeather from '../images/4102316_cloud_drizzle_rain_weather_icon.png'
@@ -40,11 +38,12 @@ const Homepage: React.FC = () => {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
+
     }, []);
+
     const [previousAlerts, setPreviousAlerts] = useState<any[]>([]);
 
     useEffect(() => {
-        // Request notification permission on first visit
         const requestNotificationPermission = async () => {
             if (localStorage.getItem('notificationPermission') === null) {
                 const permission = await Notification.requestPermission();
@@ -54,6 +53,7 @@ const Homepage: React.FC = () => {
         requestNotificationPermission();
     }, []);
 
+
     const [seeModal, setSeeModal] = useState<boolean>(false)
     const datas = useDataAlert()
     const alertData = datas?.data
@@ -61,50 +61,22 @@ const Homepage: React.FC = () => {
     const { data } = useData()
     const WeatherData = data?.data[0] as WeatherDetails
 
-
-
-    useEffect(() => {
-        console.log("HOMEPAGE")
-        console.log(data)
-    }, [data])
-
-    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
-    const [error, setError] = useState<string | null>(null);
     const [alertDatas, setAlertData] = useState<any>(null);
 
 
+
+
     useEffect(() => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLocation({
-                        lat: position.coords.latitude,
-                        lon: position.coords.longitude,
-                    });
-                },
-                (err) => {
-                    setError('Failed to retrieve location. Please enable location services and refresh the page.');
+        axios.get(`https://api.weatherbit.io/v2.0/alerts?lat=35.7796&lon=-78.6382&key=${process.env.REACT_APP_THIRD_KEY}`)
+            .then((res) => {
+                if (res.status === 200) {
+                    setAlertData(res.data);
                 }
-            );
-        } else {
-            setError('Geolocation is not supported by this browser.');
-        }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     }, []);
-
-
-    useEffect(() => {
-        if (location) {
-            axios.get(`https://api.weatherbit.io/v2.0/alerts?lat=${location.lat}&lon=${location.lon}&key=${process.env.REACT_APP_API_KEY || process.env.REACT_APP_SEC_KEY || process.env.REACT_APP_THIRD_KEY}`)
-                .then((res) => {
-                    if (res.status === 200) {
-                        setAlertData(res.data);
-                    }
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
-        }
-    }, [location]);
 
     useEffect(() => {
         if (alertDatas?.alerts) {
@@ -120,11 +92,12 @@ const Homepage: React.FC = () => {
             return () => clearInterval(intervalId);
         }
     }, [alertDatas, previousAlerts]);
+
     const showNotification = (alert: any) => {
         if (Notification.permission === 'granted') {
             new Notification(alert.title, {
                 body: alert.description,
-                icon: sampleImage 
+                icon: sampleImage
             });
         } else if (Notification.permission !== 'denied') {
             Notification.requestPermission().then((permission) => {
@@ -137,6 +110,8 @@ const Homepage: React.FC = () => {
             });
         }
     };
+
+
     if (!data || !WeatherData?.weather) {
         return <div className='h-screen w-full flex items-center justify-center'>
             <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44" stroke="#000">
@@ -194,7 +169,7 @@ const Homepage: React.FC = () => {
 
     const newOption = {
         title: 'Weather Metrics',
-        pieHole: 0.4, 
+        pieHole: 0.4,
         backgroundColor: '#fafafc',
         slices: {
             0: { offset: 0.1 },
@@ -202,7 +177,7 @@ const Homepage: React.FC = () => {
             2: { offset: 0.1 },
             3: { offset: 0.1 },
         },
-        pieSliceText: 'label', 
+        pieSliceText: 'label',
         legend: {
             position: 'bottom',
             alignment: 'center',
@@ -307,7 +282,7 @@ const Homepage: React.FC = () => {
 
             {
                 seeModal &&
-                <MoreInfoModal weatherInfos={WeatherData} modalBool={setSeeModal}/>
+                <MoreInfoModal weatherInfos={WeatherData} modalBool={setSeeModal} />
             }
             {
                 data ?
@@ -417,7 +392,7 @@ const Homepage: React.FC = () => {
 
                                     <div className='flex flex-col'>
                                         <span className='text-left pl-2'>
-                                           Visibility:
+                                            Visibility:
                                         </span>
                                         <div className='bg-gray-300 py-2 px-6 rounded-xl w-full items-center justify-center'>
                                             <div className='flex gap-1'>
@@ -443,10 +418,10 @@ const Homepage: React.FC = () => {
                                 </section>
                                 <div className='w-full h-full pt-5'>
                                     <button
-                                    onClick={() => {
-                                        setSeeModal(prevClick => !prevClick)
-                                    }}
-                                     className='w-full  bg-slate-700 text-white rounded-xl h-[50px]'>
+                                        onClick={() => {
+                                            setSeeModal(prevClick => !prevClick)
+                                        }}
+                                        className='w-full  bg-slate-700 text-white rounded-xl h-[50px]'>
                                         More Info
                                     </button>
                                 </div>
@@ -480,7 +455,7 @@ const Homepage: React.FC = () => {
                             </div>
                             <div className='flex items-center justify-center flex-col gap-2 w-[100%] h-[50%] pt-5 customOne:flex-row'>
                                 <div className='w-full h-full  bg-slate-500 rounded-xl overflow-hidden flex flex-col gap-1 p-2 overflow-y-scroll'>
-                                <div className='pt-5 text-white'>
+                                    <div className='pt-5 text-white'>
                                         Weather Alerts
                                     </div>
                                     {
