@@ -73,19 +73,23 @@ const Header: React.FC = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
+                    console.log("Geolocation success:", position);
                     setLocation({
                         lat: position.coords.latitude,
                         lon: position.coords.longitude,
                     });
                 },
                 (err) => {
+                    console.error("Geolocation error:", err);
                     setError('Failed to retrieve location. Please enable location services and refresh the page.');
                 }
             );
         } else {
+            console.error('Geolocation is not supported by this browser.');
             setError('Geolocation is not supported by this browser.');
         }
     }, []);
+    
 
     useEffect(() => {
         if (location && !data) {
@@ -99,9 +103,12 @@ const Header: React.FC = () => {
         }
     }, [location, data, setWeatherData, setWeatherDataAlert, keys]);
 
+    const nav = useNavigate()
+
     function searchValue(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (searchVal !== '') {
+            nav('/')
             fetchWeatherData(searchVal, keys)
                 .then(setWeatherData)
                 .catch(console.error);
@@ -112,7 +119,6 @@ const Header: React.FC = () => {
         }
     }
 
-    const nav = useNavigate()
 
     const [isMenuOpen, setMenuOpen] = useState<boolean>(false)
     const menuElRef = useRef<HTMLDivElement>(null)
