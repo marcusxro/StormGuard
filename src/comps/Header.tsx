@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom'
 import { IoIosHome } from "react-icons/io";
 import { MdOutlineGpsFixed } from "react-icons/md";
 import { IoIosContact } from "react-icons/io";
-
 import WeatherIcon from './WeatherIcon'
 
 const Header: React.FC = () => {
@@ -17,10 +16,7 @@ const Header: React.FC = () => {
     const { setWeatherDataAlert } = useDataAlert();
     const [searchVal, setSearchVal] = useState<string>('');
 
-
-
     useEffect(() => {
-
             axios.get(`https://api.weatherbit.io/v2.0/current?lat=35.7796&lon=-78.6382&key=${process.env.REACT_APP_SEC_KEY || process.env.REACT_APP_THIRD_KEY}&include=minutely`)
                 .then((res) => {
                     if (res.status === 200) {
@@ -65,18 +61,14 @@ const Header: React.FC = () => {
                 });
         }
     }
-
     const nav = useNavigate()
-
-
     const [isMenuOpen, setMenuOpen] = useState<boolean>(false)
     const menuElRef = useRef<HTMLDivElement>(null)
 
     function openMenu() {
         setMenuOpen((prev) => !prev);
-        // Ensure the ref is not null
         if (menuElRef.current) {
-            alert(menuElRef.current); // Check if ref is properly set
+            alert(menuElRef.current);
             gsap.to(menuElRef.current, {
                 right: isMenuOpen ? '-500px' : '0px',
                 ease: 'bounce',
